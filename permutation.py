@@ -10,18 +10,19 @@ class Permutation:
     def operate(self, x: int):
         return self.perm[x]
 
-    def compose(self, a) -> Permutation:
-        # returns a new permutation, which performs a, then performs the permutation
+
+    def compose(self, a):
+        # returns a new permutation, which performs a, then performs self
 
         # make sure that the permutations are in the same permutation group
         assert self.n == a.n
-
-        x = [i for i in range(1,self.n+1)]
-        x = [a.operate(i) for i in x]
         
         perm = dict()
-        for i, x_i in enumerate(x):
-            perm[i+1] = x_i
+
+        # create a new permutation by finding where every number gets mapped to by the composition of permutations
+        for i in range(1,self.n+1):
+            # important: we perform a, then self, so this would have the notation (self)(a)
+            perm[i] = self.operate(a.operate(i))
         
         return Permutation(self.n, perm)
 
@@ -69,8 +70,8 @@ class Permutation:
             perm[x] = i
         return Permutation(self.n, perm)
     
-    @staticmethod
-    def from_str(s):
+    @classmethod
+    def from_str(cls, s):
         s = s[1:-1]
         arr = s.split(")(")
         arr = [list(a) for a in arr]
@@ -85,7 +86,7 @@ class Permutation:
                 else: 
                     perm[x] = int(cycle[i+1])
    
-        return Permutation(len(perm.values()),perm)
+        return cls(len(perm.values()),perm)
     
 
 
@@ -158,9 +159,50 @@ def multiplication_table(G):
 
 
 
-G = generate_group_from_perms([
+# generate the dihedral group D5
+D5 = generate_group_from_perms([
     Permutation.from_str("(12345)"),
-    Permutation.from_str("(13)(2)(4)(5)")
+    Permutation.from_str("(1)(25)(34)")
 ])
+print("D5:")
+printout(D5)
 
-print(G)
+# generate the dihedral group D6
+D6 = generate_group_from_perms([
+    Permutation.from_str("(123456)"),
+    Permutation.from_str("(14)(26)(35)")
+])
+print("D6:")
+printout(D6)
+
+
+"""
+D5:
+[ group of order: 10
+(12345)
+(1)(25)(34)
+(13524)
+(12)(35)(4)
+(14253)
+(13)(2)(45)
+(15432)
+(14)(23)(5)
+(1)(2)(3)(4)(5)
+(15)(24)(3)
+]
+D6:
+[ group of order: 12
+(123456)
+(14)(26)(35)
+(135)(246)
+(1542)(36)
+(14)(25)(36)
+(1643)(2)(5)
+(153)(264)
+(1)(23)(4)(56)
+(165432)
+(1245)(3)(6)
+(1)(2)(3)(4)(5)(6)
+(1346)(25)
+]
+"""
