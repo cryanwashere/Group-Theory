@@ -63,10 +63,11 @@ class Permutation:
             G.append(x)
         return G
     
+
     def inverse(self):
         perm = {}
-        for i in range(1,self.n):
-            x = self.operate(i)
+        for i in range(1,self.n+1):
+            x = self.perm[i]
             perm[x] = i
         return Permutation(self.n, perm)
     
@@ -87,6 +88,26 @@ class Permutation:
                     perm[x] = int(cycle[i+1])
    
         return cls(len(perm.values()),perm)
+    
+    def copy(self):
+        return Permutation(self.n, self.perm)
+    
+    def order(self):
+        # find the order of this element
+        order = 1
+        x = self.copy()
+        e = Permutation(
+            self.n,
+            {i:i for i in range(1,self.n+1)}
+        )
+        while True:
+            if x == e:
+                break
+            x = x.compose(self.copy())
+            order += 1
+        return order
+        
+
     
 
 
@@ -145,15 +166,33 @@ def conjugate(G, perm:str):
     return ret
 
 def multiplication_table(G):
-    print("          ",end="")
+    """
+    \noindent\begin{tabular}{c | c c c c c c c c c c}
+     & 0 & 1 & 2 & 3 & 4  \\
+    \cline{1-6}
+    0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 0 & $a^2$ & 25 & 25 \\
+    2 & $a^2$ & 0 & 20 & 25 & 25 \\
+    2 & 0 & $a^2$ & 20 & 25 & 25 \\
+    2 & 0 & 0 & 20 & 25 & 25 \\
+    \end{tabular}
+    """
+
+    print("\\noindent\\begin{tabular}{c | c c c c c c c c c c }")
     for g1 in G: 
-        print(g1, end="  ")
-    print("\n","="*100)
+        print(g1, end=" & ")
+    print("\\\\")
+    print("\cline{1-10}")
     for g1 in G: 
-        print(g1, " :", end=" ")
-        for g2 in G: 
-            print(Permutation.from_str(g1).compose(Permutation.from_str(g2)), end="  ")
-        print("")
+        print(g1, " &", end=" ")
+        for i, g2 in enumerate(G): 
+            if i==9:
+                end=""
+            else:
+                end="&"
+            print(Permutation.from_str(g1).compose(Permutation.from_str(g2)), end=end)
+        print(" \\\\")
+    print("\\end{tabular}")
 
 
 
@@ -167,6 +206,16 @@ D5 = generate_group_from_perms([
 print("D5:")
 printout(D5)
 
+r=Permutation.from_str("(12345)")
+s=Permutation.from_str("(1)(25)(34)")
+
+#multiplication_table(D5)
+
+for element in D5:
+    print(element, "&", Permutation.from_str(element).order(),"\\\\")
+
+
+"""
 # generate the dihedral group D6
 D6 = generate_group_from_perms([
     Permutation.from_str("(123456)"),
@@ -174,35 +223,4 @@ D6 = generate_group_from_perms([
 ])
 print("D6:")
 printout(D6)
-
-
-"""
-D5:
-[ group of order: 10
-(12345)
-(1)(25)(34)
-(13524)
-(12)(35)(4)
-(14253)
-(13)(2)(45)
-(15432)
-(14)(23)(5)
-(1)(2)(3)(4)(5)
-(15)(24)(3)
-]
-D6:
-[ group of order: 12
-(123456)
-(14)(26)(35)
-(135)(246)
-(1542)(36)
-(14)(25)(36)
-(1643)(2)(5)
-(153)(264)
-(1)(23)(4)(56)
-(165432)
-(1245)(3)(6)
-(1)(2)(3)(4)(5)(6)
-(1346)(25)
-]
 """
